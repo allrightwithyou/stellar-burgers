@@ -1,10 +1,49 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 
-const URL = process.env.BURGER_API_URL;
+const URL =
+  process.env.BURGER_API_URL || 'https://norma.nomoreparties.space/api';
 
-const checkResponse = <T>(res: Response): Promise<T> =>
-  res.ok ? res.json() : res.json().then((err) => Promise.reject(err));
+console.log('API URL:', URL);
+
+if (!process.env.BURGER_API_URL) {
+  console.warn(
+    'BURGER_API_URL environment variable is not set, using default URL:',
+    URL
+  );
+}
+
+const checkResponse = <T>(res: Response): Promise<T> => {
+  if (res.ok) {
+    return res.json().catch((err) => {
+      console.error('JSON parsing error:', err);
+      throw new Error(
+        `Failed to parse JSON response from ${res.url}: ${err.message}`
+      );
+    });
+  }
+
+  // Проверяем Content-Type ответа
+  const contentType = res.headers.get('content-type');
+  console.error('API Error Response:', {
+    status: res.status,
+    statusText: res.statusText,
+    url: res.url,
+    contentType
+  });
+
+  if (contentType && contentType.includes('application/json')) {
+    return res.json().then((err) => Promise.reject(err));
+  } else {
+    // Если ответ не JSON, читаем как текст для диагностики
+    return res.text().then((text) => {
+      console.error('Non-JSON error response:', text.substring(0, 200));
+      throw new Error(
+        `API returned non-JSON response (${res.status}): ${res.statusText}`
+      );
+    });
+  }
+};
 
 type TServerResponse<T> = {
   success: boolean;
@@ -213,15 +252,20 @@ export const getUserApi = () =>
     } as HeadersInit
   });
 
-export const updateUserApi = (user: Partial<TRegisterData>) =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+export const updateUserApi = (user: Partial<TRegisterData>) => {
+  console.log('Updating user with data:', user);
+  return fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
       authorization: getCookie('accessToken')
     } as HeadersInit,
     body: JSON.stringify(user)
+  }).then((result) => {
+    console.log('Update user result:', result);
+    return result;
   });
+};
 
 export const logoutApi = () =>
   fetch(`${URL}/auth/logout`, {
