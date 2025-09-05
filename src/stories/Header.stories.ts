@@ -18,12 +18,22 @@ type Story = StoryObj<typeof meta>;
 
 export const LoggedIn: Story = {
   args: {
-    userName: 'John Doe'
+    userName: 'John Doe',
+    pathname: '/',
+    onConstructorClick: () => {},
+    onFeedClick: () => {},
+    onProfileClick: () => {},
+    onLogoClick: () => {}
   }
 };
 
 export const LoggedOut: Story = {
   args: {
-    userName: undefined
+    userName: undefined,
+    pathname: '/',
+    onConstructorClick: () => {},
+    onFeedClick: () => {},
+    onProfileClick: () => {},
+    onLogoClick: () => {}
   }
 };

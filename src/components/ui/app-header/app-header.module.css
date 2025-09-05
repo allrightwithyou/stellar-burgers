@@ -18,6 +18,12 @@
   display: flex;
   text-decoration: none;
   color: var(--text-inactive-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: var(--text-primary-color);
 }
 
 .link_active {
@@ -34,4 +40,5 @@
   display: flex;
   align-items: center;
   margin: 0 auto;
+  cursor: pointer;
 }
