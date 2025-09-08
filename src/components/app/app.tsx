@@ -23,7 +23,7 @@ const App = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const backgroundLocation = location.state?.backgroundLocation;
+  const backgroundLocation = location.state?.background;
 
   useEffect(() => {
     dispatch(getUser());

@@ -2,7 +2,13 @@ import { FC, useMemo, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { useSelector, useDispatch } from '../../services';
+import {
+  useSelector,
+  useDispatch,
+  selectIngredients,
+  selectFeedOrders,
+  selectUserOrders
+} from '../../services';
 import { getOrderByNumberApi } from '@api';
 import { TIngredient } from '@utils-types';
 
@@ -11,11 +17,11 @@ export const OrderInfo: FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const ingredients = useSelector((state) => state.ingredients.ingredients);
+  const ingredients = useSelector(selectIngredients);
 
   // Определяем, откуда мы пришли, чтобы искать заказ в нужном стейте
-  const feedOrders = useSelector((state) => state.feed.orders.orders);
-  const userOrders = useSelector((state) => state.orders.orders);
+  const feedOrders = useSelector(selectFeedOrders);
+  const userOrders = useSelector(selectUserOrders);
 
   const isFromFeed = location.pathname.includes('/feed/');
   const orders = isFromFeed ? feedOrders : userOrders;

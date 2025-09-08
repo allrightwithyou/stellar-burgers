@@ -77,19 +77,37 @@ export const refreshToken = (): Promise<TRefreshResponse> =>
 export const fetchWithRefresh = async <T>(
   url: RequestInfo,
   options: RequestInit
-) => {
+): Promise<T> => {
   try {
     const res = await fetch(url, options);
     return await checkResponse<T>(res);
   } catch (err) {
-    if ((err as { message: string }).message === 'jwt expired') {
-      const refreshData = await refreshToken();
-      if (options.headers) {
-        (options.headers as { [key: string]: string }).authorization =
-          refreshData.accessToken;
+    // Проверяем сообщение об ошибке для JWT expired
+    const errorMessage = (err as any)?.message || '';
+    if (
+      errorMessage === 'jwt expired' ||
+      errorMessage.includes('jwt expired')
+    ) {
+      try {
+        const refreshData = await refreshToken();
+        // Создаем новые headers с обновленным токеном
+        const newHeaders = {
+          ...(options.headers as Record<string, string>),
+          authorization: refreshData.accessToken
+        };
+        const newOptions = {
+          ...options,
+          headers: newHeaders
+        };
+        const res = await fetch(url, newOptions);
+        return await checkResponse<T>(res);
+      } catch (refreshErr) {
+        // Если обновление токена не удалось, очищаем данные аутентификации
+        localStorage.removeItem('refreshToken');
+        document.cookie =
+          'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        return Promise.reject(refreshErr);
       }
-      const res = await fetch(url, options);
-      return await checkResponse<T>(res);
     } else {
       return Promise.reject(err);
     }

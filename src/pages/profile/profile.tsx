@@ -1,9 +1,14 @@
 import { ProfileUI } from '@ui-pages';
 import { FC, SyntheticEvent, useEffect, useState } from 'react';
-import { useSelector, useDispatch, updateUser } from '../../services';
+import {
+  useSelector,
+  useDispatch,
+  updateUser,
+  selectUser
+} from '../../services';
 
 export const Profile: FC = () => {
-  const user = useSelector((state) => state.user.user);
+  const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,7 +36,11 @@ export const Profile: FC = () => {
     setIsSubmitting(true);
 
     try {
-      const updateData: any = {
+      const updateData: Partial<{
+        name: string;
+        email: string;
+        password: string;
+      }> = {
         name: formValue.name,
         email: formValue.email
       };

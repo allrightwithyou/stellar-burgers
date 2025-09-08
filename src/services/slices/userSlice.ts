@@ -13,12 +13,24 @@ import { setCookie, deleteCookie } from '@utils-cookie';
 
 export const registerUser = createAsyncThunk(
   'user/registerUser',
-  async (data: TRegisterData) => registerUserApi(data)
+  async (data: TRegisterData) => {
+    const response = await registerUserApi(data);
+    // Сохраняем токены после успешной регистрации
+    setCookie('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    return response;
+  }
 );
 
 export const loginUser = createAsyncThunk(
   'user/loginUser',
-  async (data: TLoginData) => loginUserApi(data)
+  async (data: TLoginData) => {
+    const response = await loginUserApi(data);
+    // Сохраняем токены после успешного логина
+    setCookie('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    return response;
+  }
 );
 
 export const getUser = createAsyncThunk('user/getUser', getUserApi);
@@ -81,8 +93,6 @@ export const userSlice = createSlice({
         state.user = action.payload.user;
         state.isAuthenticated = true;
         state.isAuthChecked = true;
-        setCookie('accessToken', action.payload.accessToken);
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
       })
       .addCase(loginUser.pending, (state) => {
         state.loginUserRequest = true;
@@ -97,8 +107,6 @@ export const userSlice = createSlice({
         state.user = action.payload.user;
         state.isAuthenticated = true;
         state.isAuthChecked = true;
-        setCookie('accessToken', action.payload.accessToken);
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
       })
       .addCase(getUser.pending, (state) => {
         // Не изменяем isAuthChecked чтобы избежать повторного рендеринга
@@ -116,7 +124,8 @@ export const userSlice = createSlice({
         // Можно добавить loading state если нужно
       })
       .addCase(updateUser.rejected, (state, action) => {
-        console.error('Update user failed:', action.error);
+        // Обработка ошибки без побочных эффектов
+        state.registerUserError = action.error.message as string;
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload.user;

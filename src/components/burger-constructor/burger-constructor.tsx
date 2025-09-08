@@ -5,7 +5,11 @@ import {
   useSelector,
   useDispatch,
   orderBurger,
-  clearOrderModalData
+  clearOrderModalData,
+  selectConstructorItems,
+  selectOrderRequest,
+  selectOrderModalData,
+  selectUser
 } from '../../services';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,18 +17,10 @@ export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const constructorItems = {
-    bun: useSelector((state) => state.constructorBurger.bun),
-    ingredients: useSelector((state) => state.constructorBurger.ingredients)
-  };
-
-  const orderRequest = useSelector(
-    (state) => state.constructorBurger.orderRequest
-  );
-  const orderModalData = useSelector(
-    (state) => state.constructorBurger.orderModalData
-  );
-  const user = useSelector((state) => state.user.user);
+  const constructorItems = useSelector(selectConstructorItems);
+  const orderRequest = useSelector(selectOrderRequest);
+  const orderModalData = useSelector(selectOrderModalData);
+  const user = useSelector(selectUser);
 
   const onOrderClick = () => {
     if (!constructorItems.bun || orderRequest) return;
