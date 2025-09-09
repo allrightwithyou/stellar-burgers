@@ -83,7 +83,7 @@ export const fetchWithRefresh = async <T>(
     return await checkResponse<T>(res);
   } catch (err) {
     // Проверяем сообщение об ошибке для JWT expired
-    const errorMessage = (err as any)?.message || '';
+    const errorMessage = (err as Error)?.message || '';
     if (
       errorMessage === 'jwt expired' ||
       errorMessage.includes('jwt expired')

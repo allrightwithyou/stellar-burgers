@@ -21,18 +21,16 @@ export const DefaultFeedInfo: Story = {
       orders: [
         {
           _id: '11111',
-          status: 'ready',
-          name: 'Burger',
-          createdAt: '',
-          updatedAt: '',
+          status: 'done',
+          name: 'Флюоресцентный люминесцентный бургер',
+          createdAt: '2023-12-06T21:20:00.000Z',
+          updatedAt: '2023-12-06T21:20:47.000Z',
           number: 123,
-          ingredients: ['Булка', 'Начинка']
+          ingredients: ['643d69a5c3f7b9001cfa093c', '643d69a5c3f7b9001cfa0941']
         }
       ],
       total: 12,
-      totalToday: 2,
-      isLoading: false,
-      error: null
+      totalToday: 2
     },
     readyOrders: [123, 124, 125],
     pendingOrders: [126, 127]

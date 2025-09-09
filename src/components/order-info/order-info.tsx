@@ -1,4 +1,4 @@
-import { FC, useMemo, useEffect } from 'react';
+import { FC, useMemo, useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
@@ -7,10 +7,12 @@ import {
   useDispatch,
   selectIngredients,
   selectFeedOrders,
-  selectUserOrders
+  selectUserOrders,
+  getIngredients,
+  getFeeds
 } from '../../services';
 import { getOrderByNumberApi } from '@api';
-import { TIngredient } from '@utils-types';
+import { TIngredient, TOrder } from '@utils-types';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams();
@@ -18,27 +20,71 @@ export const OrderInfo: FC = () => {
   const dispatch = useDispatch();
 
   const ingredients = useSelector(selectIngredients);
-
-  // Определяем, откуда мы пришли, чтобы искать заказ в нужном стейте
   const feedOrders = useSelector(selectFeedOrders);
   const userOrders = useSelector(selectUserOrders);
+
+  const [orderData, setOrderData] = useState<TOrder | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const isFromFeed = location.pathname.includes('/feed/');
   const orders = isFromFeed ? feedOrders : userOrders;
 
-  let orderData = orders.find((order) => order.number === Number(number));
-
-  // Если заказ не найден в текущих данных, попытаемся загрузить его по номеру
   useEffect(() => {
-    if (!orderData && number) {
-      getOrderByNumberApi(Number(number)).then((response) => {
-        if (response.success && response.orders.length > 0) {
-          // Можно добавить новый action для сохранения этого заказа в стейт
-          orderData = response.orders[0];
+    const loadData = async () => {
+      setIsLoading(true);
+
+      // Загружаем ингредиенты, если они не загружены
+      if (ingredients.length === 0) {
+        dispatch(getIngredients());
+        // Ожидаем загрузки ингредиентов перед продолжением
+        return;
+      }
+
+      // Если мы в ленте и заказы не загружены, загружаем их
+      if (isFromFeed && feedOrders.length === 0) {
+        dispatch(getFeeds());
+        // Ожидаем загрузки заказов ленты перед продолжением
+        return;
+      }
+
+      // Ищем заказ в уже загруженных данных
+      const foundOrder = orders.find(
+        (order) => order.number === Number(number)
+      );
+
+      if (foundOrder) {
+        setOrderData(foundOrder);
+        setIsLoading(false);
+        return;
+      }
+
+      // Если заказ не найден в стейте, загружаем по номеру
+      if (number) {
+        try {
+          const response = await getOrderByNumberApi(Number(number));
+          if (response.success && response.orders.length > 0) {
+            setOrderData(response.orders[0]);
+          } else {
+            setOrderData(null);
+          }
+        } catch (error) {
+          console.error('Error loading order:', error);
+          setOrderData(null);
         }
-      });
-    }
-  }, [number, orderData]);
+      }
+
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, [
+    number,
+    dispatch,
+    ingredients.length,
+    feedOrders.length,
+    isFromFeed,
+    orders
+  ]);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -82,7 +128,8 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  // Показываем прелоадер во время загрузки или если нет данных
+  if (isLoading || !orderInfo) {
     return <Preloader />;
   }
 

@@ -1,6 +1,11 @@
 import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
-import { useSelector, useDispatch, getFeeds } from '../../services';
+import {
+  useSelector,
+  useDispatch,
+  getFeeds,
+  getIngredients
+} from '../../services';
 import { FC, useEffect } from 'react';
 
 export const Feed: FC = () => {
@@ -8,10 +13,18 @@ export const Feed: FC = () => {
   const orders = useSelector((state) => state.feed.orders.orders);
   const isLoading = useSelector((state) => state.feed.loading);
   const error = useSelector((state) => state.feed.error);
+  const ingredients = useSelector((state) => state.ingredients.ingredients);
+  const isIngredientsLoading = useSelector(
+    (state) => state.ingredients.loading
+  );
 
   useEffect(() => {
     dispatch(getFeeds());
-  }, [dispatch]);
+    // Загружаем ингредиенты, если они еще не загружены
+    if (ingredients.length === 0) {
+      dispatch(getIngredients());
+    }
+  }, [dispatch, ingredients.length]);
 
   const handleGetFeeds = () => {
     dispatch(getFeeds());
@@ -19,7 +32,7 @@ export const Feed: FC = () => {
 
   console.log('Feed component:', { orders, isLoading, error });
 
-  if (isLoading) {
+  if (isLoading || isIngredientsLoading) {
     return <Preloader />;
   }
 
