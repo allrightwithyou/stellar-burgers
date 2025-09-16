@@ -35,7 +35,9 @@ describe('ingredientsSlice', () => {
   ];
 
   test('should return initial state', () => {
-    expect(ingredientsReducer(undefined, { type: 'unknown' })).toEqual(initialState);
+    expect(ingredientsReducer(undefined, { type: 'unknown' })).toEqual(
+      initialState
+    );
   });
 
   describe('getIngredients async thunk', () => {
@@ -72,7 +74,9 @@ describe('ingredientsSlice', () => {
 
     test('should handle multiple state transitions', () => {
       // Начинаем с pending
-      let state = ingredientsReducer(initialState, { type: getIngredients.pending.type });
+      let state = ingredientsReducer(initialState, {
+        type: getIngredients.pending.type
+      });
       expect(state.loading).toBe(true);
 
       // Затем fulfilled

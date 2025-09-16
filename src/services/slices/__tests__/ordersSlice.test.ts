@@ -1,7 +1,4 @@
-import ordersReducer, {
-  getOrders,
-  initialState
-} from '../ordersSlice';
+import ordersReducer, { getOrders, initialState } from '../ordersSlice';
 import { TOrder } from '@utils-types';
 
 describe('ordersSlice', () => {

@@ -11,7 +11,7 @@ import ordersReducer from '../slices/ordersSlice';
 describe('Store', () => {
   test('should initialize with correct initial state', () => {
     const state = store.getState();
-    
+
     // Проверяем, что все слайсы инициализированы
     expect(state).toHaveProperty('ingredients');
     expect(state).toHaveProperty('constructorBurger');
@@ -32,7 +32,7 @@ describe('Store', () => {
     });
 
     const state = testStore.getState();
-    
+
     // Проверяем структуру состояния
     expect(state.ingredients).toEqual({
       ingredients: [],

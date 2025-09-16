@@ -78,17 +78,38 @@ describe('Burger Constructor - Final Tests', () => {
     // Проверяем URL (должен измениться)
     cy.url().should('include', '/ingredients/643d69a5c3f7b9001cfa093c');
     
-    // Проверяем, что данные ингредиента отображаются
+    // Проверяем, что данные именно этого ингредиента отображаются
     cy.get('body').should('contain', 'Краторная булка N-200i');
+    
+    // Проверяем детали ингредиента
+    cy.get('body').should('contain', 'Калории');
+    cy.get('body').should('contain', '420'); // калории булки
+    cy.get('body').should('contain', 'Белки');
+    cy.get('body').should('contain', '80'); // белки булки
+
+    // Закрываем модальное окно (нажимаем назад или ESC)
+    cy.go('back');
+    
+    // Проверяем, что вернулись на главную страницу
+    cy.url().should('not.include', '/ingredients/');
+    cy.url().should('eq', Cypress.config().baseUrl + '/');
   });
 
   it('should test order creation flow for authenticated user', () => {
     const bunSelector = '[data-cy="643d69a5c3f7b9001cfa093c"]';
     const mainSelector = '[data-cy="643d69a5c3f7b9001cfa0941"]';
+    const constructorSelector = '[data-cy="burger-constructor"]';
 
     // Добавляем ингредиенты
     cy.get(bunSelector).find('button').click({ force: true });
     cy.get(mainSelector).find('button').click({ force: true });
+
+    // Проверяем, что ингредиенты добавились в конструктор
+    cy.get(constructorSelector).should('contain', 'Краторная булка N-200i');
+    cy.get(constructorSelector).should('contain', 'Биокотлета из марсианской Магнолии');
+
+    // Проверяем, что цена не равна 0
+    cy.get('[data-cy="total-price"]').should('not.contain', '0');
 
     // Кликаем на кнопку "Оформить заказ"
     cy.get('[data-cy="order-button"]').click({ force: true });
@@ -96,8 +117,25 @@ describe('Burger Constructor - Final Tests', () => {
     // Ждем запроса создания заказа
     cy.wait('@createOrder');
 
-    // Проверяем, что номер заказа отображается где-то на странице
+    // Проверяем, что номер заказа отображается (может быть в модальном окне или на странице)
     cy.get('body', { timeout: 15000 }).should('contain', '37373');
+
+    // Если есть модальное окно, закрываем его
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-cy="modal"]').length > 0) {
+        // Закрываем модальное окно
+        cy.get('[data-cy="modal-close"]').click({ force: true });
+        // Или нажимаем ESC
+        cy.get('body').type('{esc}');
+      }
+    });
+
+    // Проверяем, что конструктор очистился после успешного создания заказа
+    cy.get('[data-cy="total-price"]', { timeout: 10000 }).should('contain', '0');
+    
+    // Проверяем, что ингредиенты исчезли из конструктора
+    cy.get(constructorSelector).should('contain', 'Выберите булки');
+    cy.get(constructorSelector).should('contain', 'Выберите начинку');
   });
 
   it('should redirect unauthenticated user to login', () => {
@@ -157,5 +195,31 @@ describe('Burger Constructor - Final Tests', () => {
     // Добавляем соус кликом для надежности  
     cy.get(sauceSelector).find('button').click({ force: true });
     cy.get(constructorSelector).should('contain', 'Соус Spicy-X');
+  });
+
+  it('should test modal window closing functionality', () => {
+    const ingredientSelector = '[data-cy="643d69a5c3f7b9001cfa093c"]';
+    
+    // Открываем модальное окно ингредиента
+    cy.get(ingredientSelector).find('a').first().click({ force: true });
+
+    // Проверяем, что модальное окно открылось
+    cy.url().should('include', '/ingredients/643d69a5c3f7b9001cfa093c');
+    cy.get('body').should('contain', 'Краторная булка N-200i');
+
+    // Тестируем закрытие модального окна разными способами
+    // 1. Закрытие через кнопку "назад" в браузере
+    cy.go('back');
+    cy.url().should('eq', Cypress.config().baseUrl + '/');
+
+    // 2. Открываем снова и закрываем через ESC (если поддерживается)
+    cy.get(ingredientSelector).find('a').first().click({ force: true });
+    cy.url().should('include', '/ingredients/643d69a5c3f7b9001cfa093c');
+    
+    // Закрываем через ESC
+    cy.get('body').type('{esc}');
+    
+    // Проверяем, что модальное окно закрылось
+    cy.url().should('eq', Cypress.config().baseUrl + '/');
   });
 });

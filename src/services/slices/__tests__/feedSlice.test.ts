@@ -1,7 +1,4 @@
-import feedReducer, {
-  getFeeds,
-  initialState
-} from '../feedSlice';
+import feedReducer, { getFeeds, initialState } from '../feedSlice';
 import { TOrdersData } from '@utils-types';
 
 describe('feedSlice', () => {

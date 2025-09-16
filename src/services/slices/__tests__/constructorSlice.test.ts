@@ -61,7 +61,9 @@ describe('constructorSlice', () => {
   });
 
   test('should return initial state', () => {
-    expect(constructorReducer(undefined, { type: 'unknown' })).toEqual(initialState);
+    expect(constructorReducer(undefined, { type: 'unknown' })).toEqual(
+      initialState
+    );
   });
 
   describe('addIngredient', () => {
@@ -96,15 +98,20 @@ describe('constructorSlice', () => {
       const action = addIngredient(mockIngredient);
       const state = constructorReducer(initialState, action);
 
-      expect(state.ingredients).toEqual([{
-        ...mockIngredient,
-        id: 'test-uuid-123'
-      }]);
+      expect(state.ingredients).toEqual([
+        {
+          ...mockIngredient,
+          id: 'test-uuid-123'
+        }
+      ]);
       expect(state.bun).toBeNull();
     });
 
     test('should add multiple ingredients', () => {
-      let state = constructorReducer(initialState, addIngredient(mockIngredient));
+      let state = constructorReducer(
+        initialState,
+        addIngredient(mockIngredient)
+      );
       state = constructorReducer(state, addIngredient(mockIngredient));
 
       expect(state.ingredients).toHaveLength(2);
@@ -126,7 +133,9 @@ describe('constructorSlice', () => {
       const state = constructorReducer(stateWithIngredients, action);
 
       expect(state.ingredients).toHaveLength(2);
-      expect(state.ingredients.find(item => item.id === 'id-2')).toBeUndefined();
+      expect(
+        state.ingredients.find((item) => item.id === 'id-2')
+      ).toBeUndefined();
     });
 
     test('should not remove ingredient if id not found', () => {
@@ -135,7 +144,10 @@ describe('constructorSlice', () => {
         ingredients: [{ ...mockIngredient, id: 'id-1' }]
       };
 
-      const action = removeIngredient({ ...mockIngredient, id: 'non-existent-id' });
+      const action = removeIngredient({
+        ...mockIngredient,
+        id: 'non-existent-id'
+      });
       const state = constructorReducer(stateWithIngredients, action);
 
       expect(state.ingredients).toHaveLength(1);
